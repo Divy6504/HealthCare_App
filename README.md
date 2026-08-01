@@ -27,7 +27,11 @@ Architecture
             SHAP + Cascade      Gemini API
             Models (joblib)   (dual prompts,
                               run concurrently)
+
+                              
 Backend: FastAPI, SQLAlchemy, PostgreSQL. JWT access tokens in httponly cookies + rotating SHA-256-hashed refresh tokens (never stores raw refresh tokens). Role-based access control (doctor / patient). Rate-limited signup and prediction endpoints (slowapi) to prevent quota abuse.
+
+
 ML inference: reproduces the training notebook's exact preprocessing (category encoding, ICD-9 diagnosis grouping, scaling) at serve time from a single saved preprocessing bundle, so raw form input maps correctly to whichever of the three encodings (native/sklearn/logreg) the winning model per stage actually expects.
 Frontend: Streamlit with custom CSS (not default styling), medication multi-select instead of per-drug dropdowns, doctor-patient account linking, separate history/report views per role.
 Deployment: Dockerized (3 services: db, backend, frontend), deployed on Render free tier.
