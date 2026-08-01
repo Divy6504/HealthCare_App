@@ -1,16 +1,19 @@
 from concurrent.futures import ThreadPoolExecutor
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from .. import models, schemas, security, ml_service, llm_service
 from ..database import get_db
+from ..limiter import limiter
 
 router = APIRouter(prefix="/predictions", tags=["predictions"])
 _llm_pool = ThreadPoolExecutor(max_workers=4)
 
 
 @router.post("/", response_model=schemas.PredictionOut)
+@limiter.limit("30/hour")
 def create_prediction(
+    request: Request,
     payload: schemas.PatientInput,
     db: Session = Depends(get_db),
     doctor: models.User = Depends(security.require_role("doctor")),
@@ -23,6 +26,7 @@ def create_prediction(
             models.User.email == payload.patient_email, models.User.role == "patient"
         ).first()
 
+    # Run both Gemini calls concurrently instead of back-to-back — halves worst-case latency.
     doctor_future = _llm_pool.submit(
         llm_service.generate_doctor_note,
         result["final_label"], result["stage1_probability"], result["top_shap_features"]
