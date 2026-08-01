@@ -91,19 +91,24 @@ care team. Do not invent facts not present above. No headers, no bullet points, 
         return _fallback_doctor_note(final_label, top_shap_features)
 
 
-def generate_patient_report(final_label: str, stage1_probability: float, top_shap_features: list[dict]) -> str:
+def generate_patient_report(final_label: str, stage1_probability: float, top_shap_features: list[dict], patient_name: str = None) -> str:
     """Plain-language report for the patient: no SHAP values, no raw column names, no numbers-as-jargon."""
     if not settings.gemini_api_key:
-        return _fallback_patient_report(final_label, top_shap_features)
-
+        return _fallback_patient_report(final_label, top_shap_features, patient_name)
     _ensure_configured()
     detail_lines = "\n".join(
         f"- {_humanize(f['feature'])}: {f['value']}" for f in top_shap_features[:6]
     ) or "- General health history"
 
+    name_instruction = (
+        f'Address the patient by name: "{patient_name}". Use their name naturally once or twice, '
+        f'not in every sentence.' if patient_name else
+        'Do not use a placeholder name or bracket like "[Patient Name]" — write it without any '
+        'name-based greeting at all, addressing them simply as "you" throughout.'
+    )
     prompt = f"""You are writing a detailed, personal readmission-risk report directly for a
 patient with no medical background. Do not mention SHAP, probabilities, percentages, statistics,
-model names, or any raw data-field names. Do not give a diagnosis.
+model names, or any raw data-field names. Do not give a diagnosis. {name_instruction}
 
 Outcome: the care team's assessment suggests the patient is {_label_text(final_label)}.
 
@@ -130,7 +135,7 @@ the patient. No headers, no bullet points, plain prose paragraphs."""
         return response.text.strip()
     except Exception as e:
         print(f"[llm_service] Gemini call failed for patient report: {type(e).__name__}: {e}")
-        return _fallback_patient_report(final_label, top_shap_features)
+        return _fallback_patient_report(final_label, top_shap_features, patient_name)
 
 
 def _fallback_doctor_note(final_label: str, top_shap_features: list[dict]) -> str:
@@ -142,7 +147,7 @@ def _fallback_doctor_note(final_label: str, top_shap_features: list[dict]) -> st
     )
 
 
-def _fallback_patient_report(final_label: str, top_shap_features: list[dict]) -> str:
+def _fallback_patient_report(final_label: str, top_shap_features: list[dict], patient_name: str = None) -> str:
     detail_bits = [f"{_humanize(f['feature'])} ({f['value']})" for f in top_shap_features[:6]]
     top = "; ".join(detail_bits) or "your recent health history"
     outcome = {
@@ -150,8 +155,9 @@ def _fallback_patient_report(final_label: str, top_shap_features: list[dict]) ->
         ">30": "your care team's assessment suggests some chance of returning to the hospital, though not right away",
         "<30": "your care team's assessment suggests a higher chance of needing to return to the hospital soon",
     }.get(final_label, "your care team has reviewed your case")
+    greeting = f"Dear {patient_name}, " if patient_name else ""
     return (
-        f"Based on your recent visit, {outcome}. "
+        f"{greeting}Based on your recent visit, {outcome}. "
         f"This assessment was informed by several details from your record: {top}. "
         f"Each of these plays a role in how your care team thinks about your recovery and risk "
         f"of needing further hospital care. "
