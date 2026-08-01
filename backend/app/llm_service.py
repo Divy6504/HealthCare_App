@@ -68,9 +68,12 @@ def generate_doctor_note(final_label: str, stage1_probability: float, top_shap_f
     ) or "- No feature breakdown available"
 
     prompt = f"""You are a clinical decision-support assistant writing a short note for a hospital
-clinician about a diabetes readmission risk prediction.
+clinician about a diabetes readmission risk assessment. Write it the way a real clinical note
+sounds — do not refer to "the model," "the algorithm," or "the prediction" as the subject of
+sentences. State findings directly, the way a clinician would phrase a risk stratification note.
 
-Model outcome: patient is {_label_text(final_label)} (stage-1 readmission probability: {stage1_probability:.2f}).
+Risk assessment: this patient's readmission risk is assessed as {_label_text(final_label)}
+(estimated risk score: {stage1_probability:.2f}).
 
 Top contributing factors (SHAP values, sign shows push toward higher risk (+) or lower risk (-)):
 {feature_lines}
