@@ -17,6 +17,12 @@ def create_prediction(
 ):
     result = ml_service.predict_cascade(payload)
 
+    linked_patient = None
+    if payload.patient_email:
+        linked_patient = db.query(models.User).filter(
+            models.User.email == payload.patient_email, models.User.role == "patient"
+        ).first()
+
     doctor_future = _llm_pool.submit(
         llm_service.generate_doctor_note,
         result["final_label"], result["stage1_probability"], result["top_shap_features"]
@@ -28,12 +34,6 @@ def create_prediction(
     )
     doctor_note = doctor_future.result()
     patient_report = patient_future.result()
-
-    linked_patient = None
-    if payload.patient_email:
-        linked_patient = db.query(models.User).filter(
-            models.User.email == payload.patient_email, models.User.role == "patient"
-        ).first()
 
     record = models.Prediction(
         doctor_id=doctor.id,
