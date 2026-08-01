@@ -21,9 +21,10 @@ def create_prediction(
         llm_service.generate_doctor_note,
         result["final_label"], result["stage1_probability"], result["top_shap_features"]
     )
+    patient_name = payload.patient_ref or (linked_patient.full_name if linked_patient else None)
     patient_future = _llm_pool.submit(
         llm_service.generate_patient_report,
-        result["final_label"], result["stage1_probability"], result["top_shap_features"]
+        result["final_label"], result["stage1_probability"], result["top_shap_features"], patient_name
     )
     doctor_note = doctor_future.result()
     patient_report = patient_future.result()
