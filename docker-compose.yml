@@ -1,0 +1,34 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: readmit
+      POSTGRES_PASSWORD: readmit
+      POSTGRES_DB: readmit
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://readmit:readmit@db:5432/readmit
+      COOKIE_SECURE: "false"
+      FRONTEND_ORIGIN: http://localhost:8501
+    ports: ["8000:8000"]
+    depends_on: [db]
+
+  frontend:
+    build: ./streamlit_app
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://backend:8000
+    ports: ["8501:8501"]
+    depends_on: [backend]
+
+volumes:
+  pgdata:
