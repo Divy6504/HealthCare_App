@@ -90,7 +90,15 @@ _MED_INT_LABELS = {0: "not prescribed", 1: "dosage decreased", 2: "dosage unchan
 
 def _humanize_value(feature: str, raw_value):
     """Translate a raw stored value into something a human can actually read."""
+    def _humanize_value(feature: str, raw_value):
+    """Translate a raw stored value into something a human can actually read."""
     raw_str = str(raw_value)
+    if feature == "age":
+        try:
+            decade = int(raw_value)
+            return f"{decade*10}-{decade*10+10} years old"
+        except (ValueError, TypeError):
+            return raw_value
     if feature == "admission_type_id":
         return _ADMISSION_TYPE_LABELS.get(raw_str, raw_str)
     if feature == "discharge_disposition_id":
