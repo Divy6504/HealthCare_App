@@ -90,8 +90,6 @@ _MED_INT_LABELS = {0: "not prescribed", 1: "dosage decreased", 2: "dosage unchan
 
 def _humanize_value(feature: str, raw_value):
     """Translate a raw stored value into something a human can actually read."""
-    def _humanize_value(feature: str, raw_value):
-    """Translate a raw stored value into something a human can actually read."""
     raw_str = str(raw_value)
     if feature == "age":
         try:
@@ -107,7 +105,7 @@ def _humanize_value(feature: str, raw_value):
         return _ADMISSION_SOURCE_LABELS.get(raw_str, raw_str)
     if isinstance(raw_value, (int, float)) and int(raw_value) in _MED_INT_LABELS and feature not in (
         "time_in_hospital", "num_lab_procedures", "num_procedures", "num_medications",
-        "number_outpatient", "number_emergency", "number_inpatient", "number_diagnoses", "age"
+        "number_outpatient", "number_emergency", "number_inpatient", "number_diagnoses"
     ):
         return _MED_INT_LABELS[int(raw_value)]
     return raw_value
