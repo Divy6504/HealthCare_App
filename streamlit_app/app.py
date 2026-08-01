@@ -179,8 +179,15 @@ def predict_page():
         c1, c2, c3 = st.columns(3)
         with c1:
             patient_ref = st.text_input("Patient name / reference")
-            patient_choice = st.selectbox("Link to patient account", list(patient_options.keys()))
-            patient_email = patient_options[patient_choice]
+            patient_choice = st.selectbox(
+                "Link to a previously-seen patient account",
+                list(patient_options.keys())
+            )
+            new_patient_email = st.text_input(
+                "Or link a new patient by email (first time only)",
+                help="If this is the first prediction for this patient, enter their registered account email here instead of using the dropdown above."
+            )
+            patient_email = new_patient_email.strip() or patient_options[patient_choice]
             race = st.selectbox("Race", ["Caucasian", "AfricanAmerican", "Hispanic", "Asian", "Other", "Unknown"])
             gender = st.selectbox("Gender", ["Female", "Male"])
         with c2:
