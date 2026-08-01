@@ -32,7 +32,8 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token_raw: 
 
 
 @router.post("/signup", response_model=schemas.UserOut, status_code=201)
-def signup(payload: schemas.UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("10/hour")
+def signup(request: Request, payload: schemas.UserCreate, db: Session = Depends(get_db)):
     existing = db.query(models.User).filter(models.User.email == payload.email).first()
     if existing:
         raise HTTPException(status_code=409, detail="Email already registered")
