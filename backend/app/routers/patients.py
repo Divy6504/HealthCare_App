@@ -24,7 +24,9 @@ def list_patients(
 ):
     return (
         db.query(models.User)
-        .filter(models.User.role == "patient", models.User.is_active.is_(True))
+        .join(models.Prediction, models.Prediction.patient_id == models.User.id)
+        .filter(models.Prediction.doctor_id == doctor.id, models.User.role == "patient")
+        .distinct()
         .order_by(models.User.full_name)
         .all()
     )
