@@ -54,7 +54,7 @@ if "page" not in st.session_state:
     st.session_state.page = "predict"
 
 
-def api(method, path, timeout=30, **kwargs):
+def api(method, path, timeout=60, **kwargs):
     try:
         r = st.session_state.http.request(method, f"{API_BASE}{path}", timeout=timeout, **kwargs)
     except requests.exceptions.ConnectionError:
