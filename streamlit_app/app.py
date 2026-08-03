@@ -55,14 +55,23 @@ if "page" not in st.session_state:
 
 
 def api(method, path, timeout=60, **kwargs):
-    try:
-        r = st.session_state.http.request(method, f"{API_BASE}{path}", timeout=timeout, **kwargs)
-    except requests.exceptions.ConnectionError:
-        st.error("Can't reach the backend server. Make sure `docker compose up` is running and try again.")
-        st.stop()
-    except requests.exceptions.Timeout:
-        st.error("The server took too long to respond. Please try again.")
-        st.stop()
+    import time
+    max_attempts = 5
+    r = None
+    for attempt in range(max_attempts):
+        try:
+            r = st.session_state.http.request(method, f"{API_BASE}{path}", timeout=timeout, **kwargs)
+            break
+        except requests.exceptions.ConnectionError:
+            if attempt < max_attempts - 1:
+                with st.spinner(f"Server is waking up (this can take up to a minute on first visit)... retry {attempt+1}/{max_attempts}"):
+                    time.sleep(10)
+                continue
+            st.error("Could not reach the backend after several attempts. Please refresh and try again.")
+            st.stop()
+        except requests.exceptions.Timeout:
+            st.error("The server took too long to respond. Please try again.")
+            st.stop()
 
     if r.status_code == 401 and path not in ("/auth/refresh", "/auth/login"):
         try:
