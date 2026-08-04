@@ -56,15 +56,14 @@ if "page" not in st.session_state:
 
 def api(method, path, timeout=60, **kwargs):
     import time
-    max_attempts = 5
+    max_attempts = 6
     r = None
     for attempt in range(max_attempts):
         try:
             r = st.session_state.http.request(method, f"{API_BASE}{path}", timeout=timeout, **kwargs)
-            break
         except requests.exceptions.ConnectionError:
             if attempt < max_attempts - 1:
-                with st.spinner(f"Server is waking up (this can take up to a minute on first visit)... retry {attempt+1}/{max_attempts}"):
+                with st.spinner(f"Server is waking up (this can take a minute on first visit)... retry {attempt+1}/{max_attempts}"):
                     time.sleep(10)
                 continue
             st.error("Could not reach the backend after several attempts. Please refresh and try again.")
@@ -73,9 +72,21 @@ def api(method, path, timeout=60, **kwargs):
             st.error("The server took too long to respond. Please try again.")
             st.stop()
 
+        # Render's gateway returns 502/503/504 while the backend container is still booting —
+        # this is a normal HTTP response, not an exception, so it needs its own retry path.
+        if r.status_code in (502, 503, 504):
+            if attempt < max_attempts - 1:
+                with st.spinner(f"Server is waking up (this can take a minute on first visit)... retry {attempt+1}/{max_attempts}"):
+                    time.sleep(10)
+                continue
+            st.error("The backend is taking too long to wake up. Please refresh and try again in a moment.")
+            st.stop()
+
+        break  # got a real response, stop retrying
+
     if r.status_code == 401 and path not in ("/auth/refresh", "/auth/login"):
         try:
-            refresh_r = st.session_state.http.request("POST", f"{API_BASE}/auth/refresh", timeout=30)
+            refresh_r = st.session_state.http.request("POST", f"{API_BASE}/auth/refresh", timeout=timeout)
         except requests.exceptions.RequestException:
             refresh_r = None
         if refresh_r is not None and refresh_r.status_code == 200:
