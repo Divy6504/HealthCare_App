@@ -69,7 +69,10 @@ def api(method, path, timeout=60, **kwargs):
             st.error("Could not reach the backend after several attempts. Please refresh and try again.")
             st.stop()
         except requests.exceptions.Timeout:
-            st.error("The server took too long to respond. Please try again.")
+            if attempt < max_attempts - 1:
+                with st.spinner(f"Server is waking up (this can take a minute on first visit)... retry {attempt+1}/{max_attempts}"):
+                    continue
+            st.error("The server took too long to respond after several attempts. Please refresh and try again.")
             st.stop()
 
         # Render's gateway returns 502/503/504 while the backend container is still booting —
