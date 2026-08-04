@@ -61,6 +61,8 @@ def api(method, path, timeout=60, **kwargs):
     for attempt in range(max_attempts):
         try:
             r = st.session_state.http.request(method, f"{API_BASE}{path}", timeout=timeout, **kwargs)
+            if r.status_code >= 400:
+              st.error(f"DEBUG — status: {r.status_code}, body: {r.text[:500]}")
         except requests.exceptions.ConnectionError:
             if attempt < max_attempts - 1:
                 with st.spinner(f"Server is waking up (this can take a minute on first visit)... retry {attempt+1}/{max_attempts}"):
