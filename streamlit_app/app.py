@@ -56,7 +56,7 @@ if "page" not in st.session_state:
 
 def api(method, path, timeout=60, **kwargs):
     import time
-    max_attempts = 6
+    max_attempts = 12
     r = None
     for attempt in range(max_attempts):
         try:
