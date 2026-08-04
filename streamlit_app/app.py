@@ -56,7 +56,7 @@ if "page" not in st.session_state:
 
 def api(method, path, timeout=60, **kwargs):
     import time
-    max_attempts = 10
+    max_attempts = 3
     r = None
     for attempt in range(max_attempts):
         try:
@@ -64,7 +64,7 @@ def api(method, path, timeout=60, **kwargs):
         except requests.exceptions.ConnectionError:
             if attempt < max_attempts - 1:
                 with st.spinner(f"Server is waking up (this can take a minute on first visit)... retry {attempt+1}/{max_attempts}"):
-                    time.sleep(30)
+                    time.sleep(8)
                 continue
             st.error("Could not reach the backend after several attempts. Please refresh and try again.")
             st.stop()
@@ -80,7 +80,7 @@ def api(method, path, timeout=60, **kwargs):
         if r.status_code in (502, 503, 504):
             if attempt < max_attempts - 1:
                 with st.spinner(f"Server is waking up (this can take a minute on first visit)... retry {attempt+1}/{max_attempts}"):
-                    time.sleep(30)
+                    time.sleep(8)
                 continue
             st.error("The backend is taking too long to wake up. Please refresh and try again in a moment.")
             st.stop()
