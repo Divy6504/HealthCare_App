@@ -4,11 +4,11 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-API_BASE = os.getenv("API_BASE_URL") or st.secrets.get("API_BASE_URL", "http://localhost:8000")
-print(f"DEBUG - API_BASE is: {API_BASE}")
-
 st.set_page_config(page_title="ReadmitRisk | Diabetes Readmission Predictor",
                     page_icon="🩺", layout="wide", initial_sidebar_state="expanded")
+
+API_BASE = os.getenv("API_BASE_URL") or st.secrets.get("API_BASE_URL", "http://localhost:8000")
+st.error(f"DEBUG - API_BASE is: {API_BASE}")
 # ---------------------------------------------------------------- styling ---
 st.markdown("""
 <style>
