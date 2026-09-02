@@ -6,3 +6,6 @@ dependencies = [
     "fastapi",
     "uvicorn",
 ]
+
+[tool.setuptools]
+py-modules = []
