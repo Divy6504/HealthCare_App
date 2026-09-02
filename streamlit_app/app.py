@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE = os.getenv("API_BASE_URL") or st.secrets.get("API_BASE_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="ReadmitRisk | Diabetes Readmission Predictor",
                     page_icon="🩺", layout="wide", initial_sidebar_state="expanded")
