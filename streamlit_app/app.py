@@ -9,7 +9,6 @@ print(f"DEBUG - API_BASE is: {API_BASE}")
 
 st.set_page_config(page_title="ReadmitRisk | Diabetes Readmission Predictor",
                     page_icon="🩺", layout="wide", initial_sidebar_state="expanded")
-
 # ---------------------------------------------------------------- styling ---
 st.markdown("""
 <style>
